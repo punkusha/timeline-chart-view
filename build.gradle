@@ -29,36 +29,100 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0'
+        classpath 'com.android.tools.build:gradle:3.1.0-alpha04'
     }
 }
 
-subprojects {
-    afterEvaluate {project ->
-        if (project.hasProperty("android")) {
-            android {
-                compileSdkVersion 27
-                buildToolsVersion '27.0.0'
 
-                defaultConfig {
-                    minSdkVersion 15
-                    targetSdkVersion 27
+apply plugin: 'com.android.library'
 
-                    versionCode = 9
-                    versionName = rootProject.subprojects.ext.versionName[0]
-                }
+def supportVersion = '23.4.0'
+def versionName = '1.0.2'
+def javadocDir = new File(project.buildDir, "docs/javadocs/")
+def releaseDir = new File(project.buildDir, "out/release/")
 
-                compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_1_7
-                    targetCompatibility = JavaVersion.VERSION_1_7
-                }
-            }
+
+group = 'com.ruesga.timeline-chart-view'
+version = versionName
+
+android {
+
+    compileSdkVersion 23
+    buildToolsVersion '27.0.1'
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 23
+
+        versionCode = 9
+        versionName = versionName
+    }
+
+//    CompileOptions {
+//        sourceCompatibility = JavaVersion.VERSION_1_7
+//        targetCompatibility = JavaVersion.VERSION_1_7
+//    }
+
+    dependencies {
+        implementation 'com.android.support:support-v4:' + supportVersion
+    }
+
+    defaultConfig {
+        resourcePrefix 'tlc'
+        consumerProguardFiles file('proguard.txt')
+    }
+
+    libraryVariants.all { variant ->
+        def variantName = variant.baseName.capitalize()
+
+        variant.outputs.all { output ->
+            outputFileName = "${variant.name}/timeline-chart-view-" + ((String) versionName) + ".aar"
+        }
+
+        //noinspection GroovyAssignabilityCheck
+        task "javadoc${variantName}" (type: Javadoc, dependsOn: "compile${variantName}Sources") {
+            source = android.sourceSets.main.java.srcDirs
+            def variantCompiledClassesDir = file("${buildDir}/intermediates/classes/${variant.dirName}/")
+            classpath = files(
+                    variant.javaCompiler.classpath,
+                    variantCompiledClassesDir,
+                    android.bootClasspath
+            )
+            destinationDir = new File(javadocDir, (String) variant.name)
+
+            options.author(true)
+            options.version(true)
+            options.use(true)
+            options.setMemberLevel(JavadocMemberLevel.PUBLIC)
+            options.links("http://docs.oracle.com/javase/7/docs/api/")
+            options.links("http://developer.android.com/reference/")
+
+            exclude '**/BuildConfig.java'
+            exclude '**/R.java'
+            exclude '**/helpers/*.java'
+            failOnError false
         }
     }
-
-    ext {
-        supportVersion = '27.0.0'
-        versionName = '1.0.2'
-    }
 }
 
+//noinspection GroovyAssignabilityCheck
+task "javadocJar"(type: Jar, dependsOn: "javadocRelease") {
+    classifier = 'javadoc'
+    from new File(javadocDir, "release")
+    archiveName = "timeline-chart-view-" + versionName + "-javadoc.jar"
+    destinationDir = releaseDir
+}
+
+//noinspection GroovyAssignabilityCheck
+task "sourcesJar"(type: Jar, dependsOn: "compileReleaseSources") {
+    classifier = 'sources'
+    //noinspection GroovyAssignabilityCheck
+    from android.sourceSets.main.java.srcDirs
+    archiveName = "timeline-chart-view-" + versionName + "-sources.jar"
+    destinationDir = releaseDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
