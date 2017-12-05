@@ -376,6 +376,7 @@ public class TimelineChartView extends View {
     private boolean mEdgeEffectLeftActive;
     private boolean mEdgeEffectRightActive;
 
+    private int mHightlightColor = -1;
     private int[] mUserPalette;
     private int[] mCurrentPalette;
 
@@ -928,6 +929,10 @@ public class TimelineChartView extends View {
             setupSeriesBackground(mGraphAreaBgPaint.getColor());
             ViewCompat.postInvalidateOnAnimation(this);
         }
+    }
+
+    public void setHightlightColor(int mHightlightColor) {
+        this.mHightlightColor = mHightlightColor;
     }
 
     /**
@@ -2108,6 +2113,13 @@ public class TimelineChartView extends View {
 
     private void setupSeriesBackground(int color) {
         int[] currentPalette = new int[mSeries];
+        int[] accentPalette;
+        if (mHightlightColor != -1) {
+            accentPalette = MaterialPaletteHelper.createMaterialSpectrumPalette(mHightlightColor, mSeries);
+        } else {
+            accentPalette = currentPalette;
+        }
+
         Paint[] seriesBgPaint = new Paint[mSeries];
         Paint[] highlightSeriesBgPaint = new Paint[mSeries];
         if (mSeries == 0) {
@@ -2122,21 +2134,20 @@ public class TimelineChartView extends View {
                 currentPalette[i] = mUserPalette[i];
                 seriesBgPaint[i].setColor(currentPalette[i]);
                 highlightSeriesBgPaint[i] = new Paint(seriesBgPaint[i]);
-                highlightSeriesBgPaint[i].setColor(
-                        MaterialPaletteHelper.getComplementaryColor(currentPalette[i]));
+                highlightSeriesBgPaint[i].setColor(accentPalette[i]);
             }
         }
 
         // Generate bar items palette based on background color
         int needed = mSeries - userPaletteCount;
         int[] palette = MaterialPaletteHelper.createMaterialSpectrumPalette(color, needed);
+
         for (int i = userPaletteCount; i < mSeries; i++) {
             seriesBgPaint[i] = new Paint();
             currentPalette[i] = palette[i - userPaletteCount];
             seriesBgPaint[i].setColor(currentPalette[i]);
             highlightSeriesBgPaint[i] = new Paint(seriesBgPaint[i]);
-            highlightSeriesBgPaint[i].setColor(
-                    MaterialPaletteHelper.getComplementaryColor(currentPalette[i]));
+            highlightSeriesBgPaint[i].setColor(accentPalette[i]);
         }
 
         final boolean changed = !(Arrays.equals(currentPalette, mCurrentPalette));
@@ -2392,4 +2403,5 @@ public class TimelineChartView extends View {
         mHighlightSeriesBgPaint[1].setColor(palette2[1]);
 
     }
+
 }
