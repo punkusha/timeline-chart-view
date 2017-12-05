@@ -58,6 +58,7 @@
         <item>1451602799000</item>
         <item>1451602740000</item>
         <item>1451516400000</item>
+        <item>1451516400000</item>
     </string-array>
 
     <!-- Default tick label formats -->
@@ -65,5 +66,6 @@
         <item>HH:mm:ss</item>
         <item>HH:mm</item>
         <item>dd\u000AMMM\u000Ayyyy</item>
+        <item>MMM\u000Ayyyy</item>
     </string-array>
 </resources>

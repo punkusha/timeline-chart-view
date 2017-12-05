@@ -329,9 +329,10 @@ public class TimelineChartView extends View {
     public static final int ONLY_ADDITIONS_OPTIMIZATION = 2;
 
     // Sort of available formats for tick labels
-    private static final int TICK_LABEL_SECONDS_FORMAT = 0;
-    private static final int TICK_LABEL_HOUR_MINUTES_FORMAT = 1;
-    private static final int TICK_LABEL_DAY_FORMAT = 2;
+    public static final int TICK_LABEL_SECONDS_FORMAT = 0;
+    public static final int TICK_LABEL_HOUR_MINUTES_FORMAT = 1;
+    public static final int TICK_LABEL_DAY_FORMAT = 2;
+    public static final int TICK_LABEL_MONTH_FORMAT = 3;
 
     private static final float MAX_ZOOM_OUT = 4.0f;
     private static final float MIN_ZOOM_OUT = 1.0f;
@@ -340,6 +341,8 @@ public class TimelineChartView extends View {
     private static final int SYSTEM_SOUND_EFFECT = 0;
 
     private static final int TAP_TIMEOUT = 50;
+
+    private int mTickLabelFormatIndex = -1;
 
     private Cursor mCursor;
     private int mOptimizationFlag = NO_OPTIMIZATION;
@@ -420,6 +423,7 @@ public class TimelineChartView extends View {
     private float mTextSizeFactor;
     private float mSize8;
     private float mSize12;
+    private float mSize14;
     private float mSize20;
 
     private VelocityTracker mVelocityTracker;
@@ -599,6 +603,7 @@ public class TimelineChartView extends View {
         final DisplayMetrics dp = getResources().getDisplayMetrics();
         mSize8 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 8, dp);
         mSize12 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, dp);
+        mSize14 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14, dp);
         mSize20 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 20, dp);
 
         final ViewConfiguration vc = ViewConfiguration.get(ctx);
@@ -1784,7 +1789,7 @@ public class TimelineChartView extends View {
             mTickCalendar = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
 
             mTextSizeFactor = mFooterBarHeight / mDefFooterBarHeight;
-            mTickLabelFgPaint.setTextSize((int) (mSize8 * mTextSizeFactor));
+            mTickLabelFgPaint.setTextSize((int) (mSize12 * mTextSizeFactor));
 
             mTickDate = new Date();
 
@@ -1808,9 +1813,7 @@ public class TimelineChartView extends View {
                         new DynamicLayout(spannable, mTickLabelFgPaint,
                             (int) mBarItemWidth, Layout.Alignment.ALIGN_CENTER, 1.0f, 1.0f, false));
 
-                // Save min height
-                mTickLabelMinHeight = Math.max(
-                        mTickLabelMinHeight, mTickTextLayouts[i].get(text.length()).getHeight());
+                mTickLabelMinHeight = mTickTextLayouts[i].get(text.length()).getHeight();
             }
         }
     }
@@ -1818,7 +1821,11 @@ public class TimelineChartView extends View {
     private DynamicSpannableString createSpannableTick(int tickFormat, CharSequence text) {
         DynamicSpannableString spannable = new DynamicSpannableString(text);
         mTickTextSpannables[tickFormat].put(text.length(), spannable);
-        if (tickFormat == (mTickFormats.length - 1)) {
+        if (tickFormat == 3) {
+            spannable.setSpan(new AbsoluteSizeSpan(
+                            (int) (mSize14 * mTextSizeFactor)), 0, text.length() - 4,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        } else if (tickFormat == 2) {
             spannable.setSpan(new AbsoluteSizeSpan(
                             (int) (mSize20 * mTextSizeFactor)), 0, 2,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -1995,7 +2002,7 @@ public class TimelineChartView extends View {
 
                     // Determine the best tick vertical alignment
                     final int tickLabelFormat = getTickLabelFormat(timestamp);
-                    if (tickLabelFormat == TICK_LABEL_DAY_FORMAT ||
+                    if (tickLabelFormat == TICK_LABEL_DAY_FORMAT || tickLabelFormat == TICK_LABEL_MONTH_FORMAT ||
                             (lastTickLabelFormat != -1 && lastTickLabelFormat != tickLabelFormat)) {
                         hasDayFormat = true;
                     }
@@ -2278,12 +2285,20 @@ public class TimelineChartView extends View {
         mBarWidth = mBarItemWidth + mBarItemSpace;
     }
 
+    public void setTickLabelFormat(int tickLabelFormatIndex) {
+        this.mTickLabelFormatIndex = tickLabelFormatIndex;
+    }
+
     private int getTickLabelFormat(long timestamp) {
+        if (mTickLabelFormatIndex != -1) return mTickLabelFormatIndex;
+
         mTickCalendar.setTimeInMillis(timestamp);
+        final int day = mTickCalendar.get(Calendar.DAY_OF_MONTH);
         final int hour = mTickCalendar.get(Calendar.HOUR_OF_DAY);
         final int minute = mTickCalendar.get(Calendar.MINUTE);
         final int second = mTickCalendar.get(Calendar.SECOND);
         final int millisecond = mTickCalendar.get(Calendar.MILLISECOND);
+
         if (hour == 0 && minute == 0 && second == 0 && millisecond == 0) {
             return TICK_LABEL_DAY_FORMAT;
         }
