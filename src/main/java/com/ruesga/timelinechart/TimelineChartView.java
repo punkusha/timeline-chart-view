@@ -376,7 +376,7 @@ public class TimelineChartView extends View {
     private boolean mEdgeEffectLeftActive;
     private boolean mEdgeEffectRightActive;
 
-    private int mHightlightColor = -1;
+    private int[] mHighlightPalette;
     private int[] mUserPalette;
     private int[] mCurrentPalette;
 
@@ -931,8 +931,14 @@ public class TimelineChartView extends View {
         }
     }
 
-    public void setHightlightColor(int mHightlightColor) {
-        this.mHightlightColor = mHightlightColor;
+    public void setHighlightPalette(int[] highlightPalette) {
+        if (!Arrays.equals(mHighlightPalette, highlightPalette)) {
+            mHighlightPalette = highlightPalette;
+//            setupSeriesBackground(mGraphAreaBgPaint.getColor());
+            ViewCompat.postInvalidateOnAnimation(this);
+        }
+
+
     }
 
     /**
@@ -2114,8 +2120,8 @@ public class TimelineChartView extends View {
     private void setupSeriesBackground(int color) {
         int[] currentPalette = new int[mSeries];
         int[] accentPalette;
-        if (mHightlightColor != -1) {
-            accentPalette = MaterialPaletteHelper.createMaterialSpectrumPalette(mHightlightColor, mSeries);
+        if (mHighlightPalette != null) {
+            accentPalette = mHighlightPalette;
         } else {
             accentPalette = currentPalette;
         }
