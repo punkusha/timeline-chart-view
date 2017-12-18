@@ -423,7 +423,7 @@ public class TimelineChartView extends View {
 
     private float mTextSizeFactor;
     private float mSize8;
-    private float mSize12;
+    private float mSize10;
     private float mSize14;
     private float mSize20;
 
@@ -603,7 +603,7 @@ public class TimelineChartView extends View {
 
         final DisplayMetrics dp = getResources().getDisplayMetrics();
         mSize8 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 8, dp);
-        mSize12 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, dp);
+        mSize10 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10, dp);
         mSize14 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14, dp);
         mSize20 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 20, dp);
 
@@ -1800,7 +1800,7 @@ public class TimelineChartView extends View {
             mTickCalendar = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
 
             mTextSizeFactor = mFooterBarHeight / mDefFooterBarHeight;
-            mTickLabelFgPaint.setTextSize((int) (mSize12 * mTextSizeFactor));
+            mTickLabelFgPaint.setTextSize((int) (mSize10 * mTextSizeFactor));
 
             mTickDate = new Date();
 
@@ -1834,7 +1834,7 @@ public class TimelineChartView extends View {
         mTickTextSpannables[tickFormat].put(text.length(), spannable);
         if (tickFormat == 3) {
             spannable.setSpan(new AbsoluteSizeSpan(
-                            (int) (mSize14 * mTextSizeFactor)), 0, text.length() - 4,
+                            (int) (mSize10 * mTextSizeFactor)), 0, text.length() - 4,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         } else if (tickFormat == 2) {
             spannable.setSpan(new AbsoluteSizeSpan(
@@ -1842,7 +1842,7 @@ public class TimelineChartView extends View {
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         } else if (tickFormat == 1) {
             spannable.setSpan(new AbsoluteSizeSpan(
-                            (int) (mSize12 * mTextSizeFactor)), 0, text.length(),
+                            (int) (mSize10 * mTextSizeFactor)), 0, text.length(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return spannable;
